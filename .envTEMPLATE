@@ -1,0 +1,4 @@
+AWS_ACCESS_KEY_ID=foobar
+AWS_SECRET_ACCESS_KEY=foobar
+AWS_DEFAULT_REGION=eu-west-1
+DDB_ENDPOINT=http://localhost:8001
