@@ -1,6 +1,7 @@
 import logging
 import os
-from uuid import uuid4
+
+# from uuid import uuid4
 
 import boto3
 import pytest
@@ -11,6 +12,7 @@ logging.getLogger("botocore").setLevel(logging.CRITICAL)
 AWS_DEFAULT_REGION = os.getenv("AWS_DEFAULT_REGION")
 session = boto3.session.Session()
 
+
 @pytest.fixture
 def empty_entity_table(monkeypatch):
     # Copy .envTEMPLATE to .env to populate env variables for test
@@ -18,7 +20,7 @@ def empty_entity_table(monkeypatch):
     assert os.getenv("AWS_SECRET_ACCESS_KEY")
     assert os.getenv("AWS_DEFAULT_REGION")
     assert os.getenv("DDB_ENDPOINT")
-    ddb_tablename = str(uuid4())
+    ddb_tablename = "MyTable"  # str(uuid4())
     monkeypatch.setenv("DDB_ENTITYTABLE", ddb_tablename)
     dynamodb = session.resource("dynamodb", endpoint_url=os.getenv("DDB_ENDPOINT"))
     _ = dynamodb.create_table(
@@ -31,7 +33,7 @@ def empty_entity_table(monkeypatch):
             {"AttributeName": "PK", "KeyType": "HASH"},
             {"AttributeName": "SK", "KeyType": "RANGE"},
         ],
-        BillingMode="PAY_PER_REQUEST"
+        BillingMode="PAY_PER_REQUEST",
     )
     table = dynamodb.Table(ddb_tablename)
     yield table

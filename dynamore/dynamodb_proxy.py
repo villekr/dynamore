@@ -1,11 +1,17 @@
 import os
 
 import boto3
-from dynamoer.entity import Entity
-from dynamoer.utils import log
+from dynamore.entity import Entity
+from dynamore.utils import log
 
 
 class DynamoDbProxy(object):
+    """ DynamoDbProxy implements api to manage entities on DynamoDb
+
+    It offers http-like operations to get and add entity items.
+
+    """
+
     def __init__(self, *, table_name: str):
         session = boto3.session.Session()
         self.dynamodb = session.resource(
@@ -14,17 +20,8 @@ class DynamoDbProxy(object):
         self.table_name = table_name
         self.table = self.dynamodb.Table(table_name)
 
-    def get_item(
-        self,
-        *,
-        entity_class: Entity,
-        data: dict = {},
-        admin: bool = False,
-        cognito_groups: list = [],
-    ) -> list:
-        response = entity_class.query(
-            data=data, table=self.table, admin=admin, cognito_groups=cognito_groups,
-        )
+    def get(self, *, entity_class: Entity, data: dict = {}) -> list:
+        response = entity_class.query(data=data, table=self.table)
         if "Item" in response:
             return entity_class.filter_ddbkeys(response["Item"])
         elif "Items" in response:
@@ -32,7 +29,7 @@ class DynamoDbProxy(object):
         else:
             raise Exception("Not Found.")
 
-    def post_item(self, *, entity_class: Entity, data: dict = {}) -> dict:
+    def post(self, *, entity_class: Entity, data: dict = {}) -> dict:
         instance = entity_class(
             data=data
         )  # raise ValueError if data is not valid for given entity
@@ -62,7 +59,7 @@ class DynamoDbProxy(object):
             log.error(f"post_item failed {e}")
             raise Exception(e)
 
-    def put_item(self, *, entity_class: Entity, data: dict = {}) -> int:
+    def put(self, *, entity_class: Entity, data: dict = {}) -> int:
         instance = entity_class(
             data=data
         )  # raise ValueError if data is not valid for given entity
@@ -86,7 +83,7 @@ class DynamoDbProxy(object):
         log.debug(response)
         return instance.data()
 
-    def patch_item(self, *, entity_class: Entity, data: dict = {}) -> int:
+    def patch(self, *, entity_class: Entity, data: dict = {}) -> int:
         identity = entity_class.make_identity(data=data)
         log.debug(identity)
         response = self.table.get_item(Key=identity)
@@ -115,7 +112,7 @@ class DynamoDbProxy(object):
         log.debug(f"post_status: {post_status}")
         return entity_class.filter_ddbkeys(item=item)
 
-    def delete_item(self, *, entity_class: Entity, data: dict = {}) -> int:
+    def delete(self, *, entity_class: Entity, data: dict = {}) -> int:
         identity = entity_class.make_identity(data=data)
         log.debug(identity)
         response = self.table.get_item(Key=identity)

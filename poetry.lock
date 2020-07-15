@@ -27,10 +27,10 @@ description = "The AWS SDK for Python"
 name = "boto3"
 optional = false
 python-versions = "*"
-version = "1.14.20"
+version = "1.12.32"
 
 [package.dependencies]
-botocore = ">=1.17.20,<1.18.0"
+botocore = ">=1.15.32,<1.16.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.3.0,<0.4.0"
 
@@ -40,7 +40,7 @@ description = "Low-level, data-driven core of boto 3."
 name = "botocore"
 optional = false
 python-versions = "*"
-version = "1.17.20"
+version = "1.15.49"
 
 [package.dependencies]
 docutils = ">=0.10,<0.16"
@@ -238,7 +238,7 @@ python-versions = "*"
 version = "0.2.5"
 
 [metadata]
-content-hash = "e9b4d2a7271148e72e42a970eb88ba9c83854538c287b856614063f0c8dc231c"
+content-hash = "b136976b7c493e33e3b47323627a2f8b799331f74652cb9e5a958d8de9f80ad1"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -251,12 +251,12 @@ attrs = [
     {file = "attrs-19.3.0.tar.gz", hash = "sha256:f7b7ce16570fe9965acd6d30101a28f62fb4a7f9e926b3bbc9b61f8b04247e72"},
 ]
 boto3 = [
-    {file = "boto3-1.14.20-py2.py3-none-any.whl", hash = "sha256:f7aa33b382cc9e73ef7f590b885e72732ad2bd9628c5e312c9aeb8ba011c6820"},
-    {file = "boto3-1.14.20.tar.gz", hash = "sha256:e6ab26155b2f83798218106580ab2b3cd47691e25aba912e0351502eda8d86e0"},
+    {file = "boto3-1.12.32-py2.py3-none-any.whl", hash = "sha256:57398de1b5e074e715c866441e69f90c9468959d5743a021d8aeed04fbaa1078"},
+    {file = "boto3-1.12.32.tar.gz", hash = "sha256:60ac1124597231ed36a7320547cd0d16a001bb92333ab30ad20514f77e585225"},
 ]
 botocore = [
-    {file = "botocore-1.17.20-py2.py3-none-any.whl", hash = "sha256:e7fee600092b51ca8016c541d5c50a8b39179d5c184ec3fd430400d99ba0c55a"},
-    {file = "botocore-1.17.20.tar.gz", hash = "sha256:d1bf8c2085719221683edf54913c6155c68705f26ab4a72c45e4de5176a8cf7b"},
+    {file = "botocore-1.15.49-py2.py3-none-any.whl", hash = "sha256:b805691b4dedcb2a252f52347479ff351429624a873f001b6a1c81aca03dccee"},
+    {file = "botocore-1.15.49.tar.gz", hash = "sha256:a474131ba7a7d700b91696a27e8cdcf1b473084addf92f90b269ebd8f5c3d3e0"},
 ]
 colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},

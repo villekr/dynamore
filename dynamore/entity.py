@@ -1,10 +1,9 @@
 from decimal import Decimal
-from uuid import UUID, uuid4
 
-import dynamoer.validator as validator
+import dynamore.validator as validator
 from boto3.dynamodb.conditions import Key
 from jsonschema.exceptions import ValidationError
-from dynamoer.utils import log
+from dynamore.utils import log
 
 
 class Entity(object):
@@ -13,19 +12,21 @@ class Entity(object):
         "title": "ENTITY",
         "type": "object",
         "required": [],
-        "properties": {
-            "name": {"type": "string", "minLength": 4, "maxLength": 50},
-            "uid": {"type": "uuid4"},
-        },
+        "properties": {},
         "additionalProperties": False,
     }
+
+    ID_ATTRIBUTE = "uid"
 
     def __init__(self, data: dict):
         """
         Create a new object.
         Raises ValueError if data is not valid according to schema.
         """
-        assert self.SCHEMA is not None and "title" in self.SCHEMA
+        if self.SCHEMA is None or type(self.SCHEMA) is not dict:
+            raise ValueError("SCHEMA not defined or type not dict.")
+        if "title" not in self.SCHEMA:
+            raise ValueError('"title" missing from SCHEMA.')
         try:
             validator.validate(schema=self.SCHEMA, data=data)
         except ValidationError as e:
@@ -34,10 +35,16 @@ class Entity(object):
         except Exception as e:  # Some other error from validator
             log.debug(e)
             raise ValueError
-        self.attributes = {"uid": str(uuid4())}  # always generate uid
-        self.attributes = {**self.attributes, **data}
+        self.attributes = data
 
     # Override in subclass if needed.
+
+    @classmethod
+    def pr_keys(cls) -> list:
+        """ Return attribute names used as database primary keys
+        (partition and sort keys).
+        """
+        return ["PK", "SK"]
 
     @classmethod
     def make_identity(cls, data: dict) -> dict:
@@ -45,23 +52,17 @@ class Entity(object):
 
         Throws ValueError if identity can't be made.
         """
-        if data is None or "uid" not in data:
-            raise ValueError
-        try:
-            UUID(data["uid"])
-        except Exception:
+        if data is None or cls.ID_ATTRIBUTE not in data:
             raise ValueError
         pr_keys = cls.pr_keys()
         identity = {
             pr_keys[0]: cls.SCHEMA["title"],
-            pr_keys[1]: f"#{cls.SCHEMA['title']}#{data['uid']}",
+            pr_keys[1]: f"#{cls.SCHEMA['title']}#{data[cls.ID_ATTRIBUTE]}",
         }
         return identity
 
     @classmethod
-    def query(
-        cls, data: dict, table, admin: bool = False, cognito_groups: list = []
-    ) -> dict:
+    def query(cls, data: dict, table) -> dict:
         """ Query dynamodb either by entity type or get specific item
         """
         # Case 1: Try exact match
@@ -94,13 +95,7 @@ class Entity(object):
         pass
 
     @classmethod
-    def pre(
-        cls,
-        http_method: str,
-        data: dict,
-        existing_item: dict = None,
-        internal_invocation: bool = False,
-    ) -> bool:
+    def pre(cls, http_method: str, data: dict, existing_item: dict = None) -> bool:
         """ Perform any precondition checks or tasks
         http_method - name of http method
         data - input data
@@ -111,14 +106,7 @@ class Entity(object):
         return True
 
     @classmethod
-    def post(
-        cls,
-        http_method: str,
-        data: dict,
-        existing_item: dict = None,
-        internal_invocation: bool = False,
-        operation_status: bool = False,
-    ) -> bool:
+    def post(cls, http_method: str, data: dict, existing_item: dict = None) -> bool:
         """ Perform any postcondition checks or tasks
         Return True if postconditions/tasks were successfull
         Return False if postconditions/tasks were successfull
@@ -158,13 +146,6 @@ class Entity(object):
         return item
 
     # Class methods implemented in Entity (no need to override)
-
-    @classmethod
-    def pr_keys(cls) -> list:
-        """ Return attribute names used as database primary keys
-        (partition and sort keys).
-        """
-        return ["PK", "SK"]
 
     @classmethod
     def decimal_to_float(cls, item):
