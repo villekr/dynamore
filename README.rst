@@ -21,8 +21,8 @@ Here's the simple example on how to create Person schema and store it to DynamoD
 
 .. code-block:: Python
 
-    from Dynamore.dynamodb_proxy import DynamoDbProxy
-    from Dynamore.entity import Entity
+    from dynamore.dynamodb_proxy import DynamoDbProxy
+    from dynamore.entity import Entity
 
 
     class Person(Entity):
