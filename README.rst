@@ -10,7 +10,7 @@ Install from Pypi:
 
 .. code-block:: bash
 
-   $ pip install Dynamore
+   $ pip install dynamore
 
 Quick start
 -----------
