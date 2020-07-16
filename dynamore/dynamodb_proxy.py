@@ -5,6 +5,24 @@ from dynamore.entity import Entity
 from dynamore.utils import log
 
 
+class AlreadyExists(Exception):
+    """Raised if trying to create an item and it already exists."""
+
+    pass
+
+
+class NotFound(Exception):
+    """Trying to update non-existing item."""
+
+    pass
+
+
+class PreconditionFailed(Exception):
+    """Precondition related to operation failed."""
+
+    pass
+
+
 class DynamoDbProxy(object):
     """ DynamoDbProxy implements api to manage entities on DynamoDb
 
@@ -27,7 +45,7 @@ class DynamoDbProxy(object):
         elif "Items" in response:
             return entity_class.filter_ddbkeys_list(response["Items"])
         else:
-            raise Exception("Not Found.")
+            return None
 
     def post(self, *, entity_class: Entity, data: dict = {}) -> dict:
         instance = entity_class(
@@ -35,21 +53,17 @@ class DynamoDbProxy(object):
         )  # raise ValueError if data is not valid for given entity
         identity = instance.identity()
         log.debug(identity)
-        try:
-            response = self.table.get_item(Key=identity)
-        except Exception as e:
-            log.error(e)
-            raise e
+        response = self.table.get_item(Key=identity)
         log.debug(response)
         if "Item" in response:
             log.debug("Already exists.")
-            raise Exception(f"Already exists.")
+            raise AlreadyExists()
         try:
             item = instance.data_with_identity()
             log.debug(item)
             pre_status = entity_class.pre(http_method="POST", data=item)
             if pre_status is False:
-                raise Exception(f"Pre-condition failed")
+                raise PreconditionFailed()
             response = self.table.put_item(Item=item)
             log.debug(response)
             post_status = instance.post(http_method="POST", data=item)
@@ -69,7 +83,7 @@ class DynamoDbProxy(object):
         log.debug(response)
         if "Item" not in response:
             log.debug("Not found")
-            raise Exception(f"Not found.")
+            raise NotFound()
         item = instance.data_with_identity()
         log.debug(item)
 
@@ -77,7 +91,7 @@ class DynamoDbProxy(object):
             http_method="PUT", data=item, existing_item=response["Item"]
         )
         if pre_status is False:
-            raise Exception(f"Pre-condition failed")
+            raise PreconditionFailed()
 
         response = self.table.put_item(Item=item)
         log.debug(response)
@@ -90,13 +104,13 @@ class DynamoDbProxy(object):
         log.debug(response)
         if "Item" not in response:
             log.debug("Not found")
-            raise Exception(f"Not found.")
+            raise NotFound()
         item = response["Item"]
         pre_status = entity_class.pre(
             http_method="PATCH", data=data, existing_item=item
         )
         if pre_status is False:
-            raise Exception(f"Pre-condition failed")
+            raise PreconditionFailed()
 
         # Overwrite existing items' keys
         for key in data:
@@ -117,12 +131,12 @@ class DynamoDbProxy(object):
         log.debug(identity)
         response = self.table.get_item(Key=identity)
         if "Item" not in response:
-            raise Exception(f"Not found: {identity}")  # http 404
+            raise NotFound()
         item = entity_class.filter_ddbkeys(response["Item"])
 
         pre_status = entity_class.pre(http_method="DELETE", data=item)
         if pre_status is False:
-            raise Exception(f"pre-condition failed")
+            raise PreconditionFailed()
 
         response = self.table.delete_item(Key=identity)
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dynamore"
-version = "0.1.0"
+version = "0.1.1"
 description = "Dynamore is extremely simple Python library for managing entities on DynamoDb."
 authors = ["Ville Kärkkäinen <ville.karkkainen@outlook.com>"]
 repository = "https://github.com/villekr/dynamore"
